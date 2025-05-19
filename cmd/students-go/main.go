@@ -1,7 +1,65 @@
 package main
 
-import "fmt"
+import (
+	"context"
+	"log"
+	"log/slog"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
+	"github.com/Shreya20002/students-go/internal/config"
+)
 
 func main() {
-	fmt.Println("Welcome to students api")
+	// load config
+	cfg := config.MustLoad()
+	// setup router
+	router := http.NewServeMux()
+
+	router.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("welcome to students api"))
+	})
+
+	// setup server
+	server := http.Server{
+		Addr:    cfg.Addr,
+		Handler: router,
+	}
+
+	slog.Info("starting server", slog.String("address", cfg.Addr))
+	//fmt.Printf("server started on %s\n", cfg.HTTPServer.Addr)
+
+	done := make(chan os.Signal, 1)
+	// press ctrl+c to stop the server (generate interrupt which triggers graceful shutdown)
+	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+	// handle graceful shutdown
+	go func() {
+		err := server.ListenAndServe()
+		if err != nil {
+			log.Fatal("failed to start server")
+		}
+	}()
+
+	<-done // blocking main fn until goroutine is done
+
+	// shutdown server logic
+	// strctured log used in production
+
+	slog.Info("shutting down the server")
+
+	// sometimes infinitely hang , we use context timer
+	// if we want to use graceful shutdown, we need to use context with timeout
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err := server.Shutdown(ctx)
+	if err != nil {
+		slog.Error("failed to shutdown server", slog.String("error", err.Error()))
+	}
+
+	slog.Info("server shutdown successfully")
 }
