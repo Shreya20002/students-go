@@ -3,6 +3,7 @@ package student
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
@@ -14,22 +15,22 @@ import (
 
 func New() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-        slog.Info("creating a student")
+		slog.Info("creating a student")
 		// json info received , so we will create a struct of that format to receive such data in go
 		var student types.Student
 
 		err := json.NewDecoder(r.Body).Decode(&student) // decode the json data into the struct var student
-        if errors.Is(err, io.EOF) {
+		if errors.Is(err, io.EOF) {
 			// 404 bad request waala error StatusBadRequest
-           response.WriteJson(w, http.StatusBadRequest, response.GeneralError(fmt.Errorf("empty body")))
-		   return 
+			response.WriteJson(w, http.StatusBadRequest, response.GeneralError(fmt.Errorf("empty body")))
+			return
 		}
 
 		if err != nil {
 			response.WriteJson(w, http.StatusBadRequest, response.GeneralError(err))
 			return
 		}
-		
+
 		// for production lvl code, we need to validate the errors
 		if err := validator.New().Struct(student); err != nil {
 
@@ -41,6 +42,4 @@ func New() http.HandlerFunc {
 		response.WriteJson(w, http.StatusCreated, map[string]string{"success": "ok"})
 		w.Write([]byte("welcome to students api"))
 	}
-}
-
 }
