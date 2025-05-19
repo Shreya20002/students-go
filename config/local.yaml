@@ -1,0 +1,9 @@
+env: "dev"
+# sqlite file based db - so it should be configurable , hence 
+# we will mention it's path in the config file
+
+storage_path: "storage/storage.db"
+# in yaml indentation is imp hence we use 1 tab
+# for indentation
+http_server:
+  address: "localhost:8082"
