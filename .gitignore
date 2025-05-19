@@ -26,3 +26,5 @@ go.work.sum
 
 # we don't want others to acess our database
 storage
+
+/config

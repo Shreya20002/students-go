@@ -7,3 +7,5 @@ storage_path: "storage/storage.db"
 # for indentation
 http_server:
   address: "localhost:8082"
+
+# good practice to commit after small changes 
