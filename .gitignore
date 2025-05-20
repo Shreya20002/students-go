@@ -25,6 +25,6 @@ go.work.sum
 .env
 
 # we don't want others to acess our database
-storage
+/storage
 
 /config
